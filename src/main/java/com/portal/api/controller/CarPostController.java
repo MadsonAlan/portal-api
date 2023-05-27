@@ -1,6 +1,7 @@
 package com.portal.api.controller;
 
 import com.portal.api.dto.CarPostDTO;
+import com.portal.api.message.KafkaProucerMessage;
 import com.portal.api.service.CarPostStoreService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -12,9 +13,17 @@ import java.util.List;
 @RequestMapping("/api/car")
 public class CarPostController {
     private final CarPostStoreService carPostStoreService;
+    private final KafkaProucerMessage kafkaProducerMessage;
 
-    public CarPostController(CarPostStoreService carPostStoreService) {
+    public CarPostController(CarPostStoreService carPostStoreService, KafkaProucerMessage kafkaProducerMessage) {
         this.carPostStoreService = carPostStoreService;
+        this.kafkaProducerMessage = kafkaProducerMessage;
+    }
+
+    @PostMapping("/post")
+    public ResponseEntity postCarForSale(@RequestBody CarPostDTO carPostDTO){
+        kafkaProducerMessage.sendMessage(carPostDTO);
+        return new ResponseEntity<>(HttpStatus.OK);
     }
 
     @GetMapping("/posts")
